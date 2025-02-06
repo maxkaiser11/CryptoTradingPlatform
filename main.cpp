@@ -1,21 +1,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "OrderBookEntry.h"
 #include "MerkelMain.h"
+#include "CSVReader.h"
 
 
 int main()
 {
   MerkelMain app{};
   app.init();
+  // CSVReader::readCSV("data.csv");
 }
-
-// bool running = true;
-  // while (running)
-  // {
-  //   MerkelMain::printMenu();
-  //   int userOption = MerkelMain::getUserOption();
-  //   processUserOption(userOption);
-  //   if (userOption == 7)
-  //     running = false;
-  // }
