@@ -59,14 +59,19 @@ int main()
                 continue;
             }
             // we have 5 tokens
-            double price = std::stod(tokens[3]);
-            double amount = std::stod(tokens[4]);
-            std::cout << price << ":" << amount << std::endl;
-
-            // for (std::string& t : tokens)
-            // {
-            //     std::cout << t << std::endl;
-            // }
+            try
+            {
+                double price = std::stod(tokens[3]);
+                double amount = std::stod(tokens[4]);
+                std::cout << price << ":" << amount << std::endl;
+            }
+            catch(std::exception& e)
+            {
+                std::cout << "Bad Float! " << tokens[3] << std::endl;
+                std::cout << "Bad Float! " << tokens[4] << std::endl;
+                continue;
+            }
+        
         }
         csvFile.close();
     }
