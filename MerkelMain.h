@@ -17,7 +17,7 @@ class MerkelMain
         void printMenu();
         void printHelp();
         void printMarketStats();
-        void enterOffer();
+        void enterAsk();
         void enterBid();
         void printWallet();
         void nextTimeFrame();
@@ -28,5 +28,5 @@ class MerkelMain
         bool running = true;
 
         std::string currentTime;
-        OrderBook orderBook{"data.csv"};
+        OrderBook orderBook{"test.csv"};
 };

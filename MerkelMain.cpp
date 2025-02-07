@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include "MerkelMain.h"
 #include "CSVReader.h"
 
@@ -28,7 +29,7 @@ void MerkelMain::printMenu()
     // 2. print exchange stats
     std::cout << "2: Print exchange stats " << std::endl;
     // 3. make an offer
-    std::cout << "3. Make an offer " << std::endl;
+    std::cout << "3. Make an ask " << std::endl;
     // 4. make a bid
     std::cout << "4. Make a bid " << std::endl;
     // 5. Print wallet
@@ -63,27 +64,32 @@ void MerkelMain::printMarketStats()
     std::cout << "Min Ask: " << OrderBook::getLowPrice(entries) << std::endl;
 
   }
-  // std::cout << "OrderBook entries: " << orders.size() << std::endl;
-  // unsigned int bids = 0;
-  // unsigned int asks = 0;
-  // for (OrderBookEntry& e : orders)
-  // {
-  //   if (e.orderType == OrderBookType::ask)
-  //   {
-  //     asks++;
-  //   }
-  //   if (e.orderType == OrderBookType::bid)
-  //   {
-  //     bids++;
-  //   }
-  // }
-  //   std::cout << "OrderBook asks: " << asks << "\n" << "OrderBook bids: " << bids << std::endl;
-
 }
 
-void MerkelMain::enterOffer()
+void MerkelMain::enterAsk()
 {
-  std::cout << "Make an offer - Enter amount" << std::endl;
+  std::cout << "Make an offer - Enter amount: product, price, amount, (eg.ETH/BTC,200,0.5)" << std::endl;
+  std::string input;
+  std::getline(std::cin, input);
+
+  std::vector<std::string> tokens = CSVReader::tokenise(input, ',');
+  if (tokens.size() != 3)
+  {
+    std::cout << "Bad Input! " << input << std::endl;
+  }
+  else
+  {
+    try
+    {
+      OrderBookEntry obe = CSVReader::stringsToOBE(tokens[1], tokens[2], currentTime, tokens[0], OrderBookType::ask);
+      orderBook.insertOrder(obe);
+    }
+    catch(const std::exception& e)
+    {
+      std::cerr << "MerkelMain::enterAsk Bad Input!" << '\n';
+    }
+  }
+  std::cout << "You typed: " << input << std::endl;
 }
 
 void MerkelMain::enterBid()
@@ -99,6 +105,12 @@ void MerkelMain::printWallet()
 void MerkelMain::nextTimeFrame()
 {
   std::cout << "Going to next time frame." << std::endl;
+  std::vector<OrderBookEntry> sales = orderBook.matchAsksToBids("ETH/BTC", currentTime);
+  std::cout << "Sales: " << sales.size() << std::endl;
+  for (OrderBookEntry& sale : sales)
+  {
+    std::cout << "Sale price: " << sale.price << " Sales amount: " << sale.amount << std::endl;
+  }
   currentTime = orderBook.getNextTime(currentTime);
 }
 
@@ -110,8 +122,18 @@ void MerkelMain::printPriceChange()
 
 int MerkelMain::getUserOption()
 {
-  int userOption;
-  std::cin >> userOption;
+  int userOption = 0;
+  std::string line;
+  std::getline(std::cin, line);
+  try
+  {
+    userOption = std::stoi(line);
+  }
+  catch(const std::exception& e)
+  {
+    
+  }
+  
   return userOption;
 }
 
@@ -126,7 +148,7 @@ void MerkelMain::processUserOption(int userOption)
       printMarketStats();
       break;
     case 3:
-      enterOffer();
+      enterAsk();
       break;
     case 4:
       enterBid();

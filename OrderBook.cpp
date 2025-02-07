@@ -2,6 +2,7 @@
 #include <map>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 OrderBook::OrderBook(std::string filename)
 {
@@ -76,6 +77,63 @@ std::string OrderBook::getPreviousTime(std::string timestamp)
         previous_timestamp = orders.back().timestamp;
     }
     return previous_timestamp;
+}
+
+void OrderBook::insertOrder(OrderBookEntry &order)
+{
+    orders.push_back(order);
+    std::sort(orders.begin(), orders.end(), OrderBookEntry::compareByTimestamp);
+}
+
+std::vector<OrderBookEntry> OrderBook::matchAsksToBids(std::string product, std::string timestamp)
+{
+    // asks = orderbook.asks in this timeframe
+    std::vector<OrderBookEntry> asks = getOrders(OrderBookType::ask, product, timestamp);
+    // bids = orderbook.bids in this timeframe
+    std::vector<OrderBookEntry> bids = getOrders(OrderBookType::bid, product, timestamp);
+
+    // sales = []
+    std::vector<OrderBookEntry> sales;
+    // sort asks lowest first
+    std::sort(asks.begin(), asks.end(), OrderBookEntry::compareByPriceAsc);
+    // sort bids highest first
+    std::sort(bids.begin(), bids.end(), OrderBookEntry::compareByPriceDsc);
+
+    // for ask in asks:
+    for (OrderBookEntry& ask : asks)
+    {
+        for (OrderBookEntry& bid : bids)
+        {
+            if (bid.price >= ask.price)
+            {
+                OrderBookEntry sale{ask.price, 0, timestamp, product, OrderBookType::sale};
+                if (bid.amount == ask.amount)
+                {
+                    sale.amount == ask.amount;
+                    sales.push_back(sale);
+                    bid.amount = 0;
+                    break;
+                }
+                if (bid.amount > ask.amount)
+                {
+                    sale.amount = ask.amount;
+                    sales.push_back(sale);
+                    bid.amount = bid.amount - ask.amount;
+                    break;
+                }
+                if (bid.amount < ask.amount)
+                {
+                    sale.amount = bid.amount;
+                    sales.push_back(sale);
+                    ask.amount = ask.amount - bid.amount;
+                    bid.amount = 0;
+                    continue;
+                }
+            }
+        }
+    }
+    // return sales
+    return sales;
 }
 
 /** this function takes the orderbook, the currenttimestamp and the previoustimestamp and compares the prices and returns the price change in % */
