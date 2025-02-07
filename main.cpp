@@ -10,5 +10,4 @@ int main()
 {
   MerkelMain app{};
   app.init();
-  // CSVReader::readCSV("data.csv");
 }
