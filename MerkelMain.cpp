@@ -11,6 +11,7 @@ MerkelMain::MerkelMain()
 void MerkelMain::init()
 {
     int input;
+    currentTime = orderBook.getEarliestTime();
     while(running)
     {
         printMenu();
@@ -34,11 +35,16 @@ void MerkelMain::printMenu()
     std::cout << "5. Print my wallet " << std::endl;
     // 6. continue
     std::cout << "6. Continue " << std::endl;
+    // 7. price change
+    std::cout << "7. Price Change" << std::endl;
     // 7. Quit
-    std::cout << "7. Quit" << std::endl;
+    std::cout << "8. Quit" << std::endl;
 
     std::cout << "=================" << std::endl;
-    std::cout << "Type in 1-7!" << std::endl;
+    std::cout << "Current time is: " << currentTime << std::endl;
+    std::cout << "=================" << std::endl;
+
+    std::cout << "Type in 1-8!" << std::endl;
   }
 
 void MerkelMain::printHelp()
@@ -51,7 +57,7 @@ void MerkelMain::printMarketStats()
   for (std::string const& p : orderBook.getKnownProducts())
   {
     std::cout << "Product: " << p << std::endl;
-    std::vector<OrderBookEntry> entries = orderBook.getOrders(OrderBookType::ask, p, "2020/03/17 17:01:30.099017");
+    std::vector<OrderBookEntry> entries = orderBook.getOrders(OrderBookType::ask, p, currentTime);
     std::cout << "Asks seen: " << entries.size() << std::endl;
     std::cout << "Max Ask: " << OrderBook::getHighPrice(entries) << std::endl;
     std::cout << "Min Ask: " << OrderBook::getLowPrice(entries) << std::endl;
@@ -93,8 +99,15 @@ void MerkelMain::printWallet()
 void MerkelMain::nextTimeFrame()
 {
   std::cout << "Going to next time frame." << std::endl;
+  currentTime = orderBook.getNextTime(currentTime);
 }
-  
+
+void MerkelMain::printPriceChange()
+{
+  std::string previousTime = orderBook.getPreviousTime(currentTime);
+  orderBook.displayPriceChange(orderBook, currentTime, previousTime);
+}
+
 int MerkelMain::getUserOption()
 {
   int userOption;
@@ -125,6 +138,9 @@ void MerkelMain::processUserOption(int userOption)
       nextTimeFrame();
       break;
     case 7:
+      printPriceChange();
+      break;
+    case 8:
       std::cout << "Thank you. Have a good day!" << std::endl;
       running = false;
       break;

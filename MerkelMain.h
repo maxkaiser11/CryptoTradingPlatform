@@ -21,9 +21,12 @@ class MerkelMain
         void enterBid();
         void printWallet();
         void nextTimeFrame();
+        void printPriceChange();
         int getUserOption();
         void processUserOption(int userOption);
 
         bool running = true;
+
+        std::string currentTime;
         OrderBook orderBook{"data.csv"};
 };

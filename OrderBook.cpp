@@ -1,6 +1,7 @@
 #include "OrderBook.h"
 #include <map>
 #include <iostream>
+#include <cmath>
 
 OrderBook::OrderBook(std::string filename)
 {
@@ -34,6 +35,89 @@ std::vector<OrderBookEntry> OrderBook::getOrders(OrderBookType type, std::string
         }
     }
     return orders_sub;
+}
+
+std::string OrderBook::getEarliestTime()
+{
+    return orders[0].timestamp;
+}
+
+std::string OrderBook::getNextTime(std::string timestamp)
+{
+    std::string next_timestamp = "";
+    for (OrderBookEntry& e : orders)
+    {
+        if (e.timestamp > timestamp)
+        {
+            next_timestamp = e.timestamp;
+            break;
+        }
+    }
+    if (next_timestamp == "")
+    {
+        next_timestamp = orders[0].timestamp;
+    }
+    return next_timestamp;
+}
+
+std::string OrderBook::getPreviousTime(std::string timestamp)
+{
+    std::string previous_timestamp = "";
+    for (int i = orders.size() - 1; i >= 0; --i)
+    {
+        if (orders[i].timestamp < timestamp)
+        {
+            previous_timestamp = orders[i].timestamp;
+            break;
+        }
+    }
+    if (previous_timestamp == "")
+    {
+        previous_timestamp = orders.back().timestamp;
+    }
+    return previous_timestamp;
+}
+
+/** this function takes the orderbook, the currenttimestamp and the previoustimestamp and compares the prices and returns the price change in % */
+void OrderBook::displayPriceChange(OrderBook &orderbook, const std::string &currentTimestamp, const std::string &previousTimestamp)
+{
+    std::vector<std::string> products = orderbook.getKnownProducts();
+
+    for (const std::string& product : products)
+    {
+        std::vector<OrderBookEntry> currentOrders = orderbook.getOrders(OrderBookType::ask, product, currentTimestamp);
+        std::vector<OrderBookEntry> previousOrders = orderbook.getOrders(OrderBookType::ask, product, previousTimestamp);
+
+        if (currentOrders.empty() || previousOrders.empty())
+        {
+            std::cout << "No data for product: " << product << std::endl;
+            continue;
+        }
+
+        // Get the representative price (e.g., high price) for each timeframe
+        double currentPrice = OrderBook::getHighPrice(currentOrders);
+        double previousPrice = OrderBook::getHighPrice(previousOrders);
+
+         // Check if the previous price is valid to avoid division by zero
+        if (previousPrice == 0.0)
+        {
+            std::cout << "Invalid previous price for product: " << product << std::endl;
+            continue;
+        }
+
+        // Calculate percentage price change
+        double priceChange = currentPrice - previousPrice;
+        double percentageChange = (priceChange / previousPrice) * 100.0;
+        // Round to 2 decimal places
+        percentageChange = std::round(percentageChange * 100.0) / 100.0;
+
+        std::cout << "Product: " << product << std::endl;
+        std::cout << "Current Price: " << currentPrice << std::endl;
+        std::cout << "Previous Price: " << previousPrice << std::endl;
+        std::cout << "Price Change: " << percentageChange << "%" << std::endl;
+        std::cout << "-----------------------------" << std::endl;
+        
+    }
 }
 
 double OrderBook::getHighPrice(std::vector<OrderBookEntry>& orders)

@@ -14,6 +14,16 @@ class OrderBook
         /** return vector of orders according to the sent filters */
         std::vector<OrderBookEntry> getOrders(OrderBookType type, std::string product, std::string timestamp);
 
+        /** returns the earliest time in the orderbook */
+        std::string getEarliestTime();
+        /** returns the next time after the sent time in the orderbook
+         * If there is no next timestamp, wraps around to the start
+         */
+        std::string getNextTime(std::string timestamp);
+        std::string getPreviousTime(std::string timestamp);
+
+        void displayPriceChange(OrderBook& orderbook, const std::string& currentTimestanp, const std::string& previousTimestamp);
+
         static double getHighPrice(std::vector<OrderBookEntry>& orders);
         static double getLowPrice(std::vector<OrderBookEntry>& orders);
 
